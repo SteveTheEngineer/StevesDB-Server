@@ -6,9 +6,9 @@ Creates a folder and a file in the current working directory:
 * config.xml - configuration file
 
 \
-The default user username is **stevesdb** and the password is **password**\
-\
-A client for Node.js: https://github.com/SteveTheEngineer/StevesDB-Client-Node
+The default user username is **stevesdb** and the password is **password**
+# Database clients
+Node.js: https://github.com/SteveTheEngineer/StevesDB-Client-Node
 # Building the server from source
 ```
 git clone https://github.com/SteveTheEngineer/StevesDB-Server
