@@ -15,3 +15,4 @@ git clone https://github.com/SteveTheEngineer/StevesDB-Server
 cd StevesDB-Server
 ./gradlew build
 ```
+The output file is located inside `build/libs/`
