@@ -23,7 +23,7 @@ import java.util.logging.Logger;
 
 public class StevesDBServer {
     public static final int PROTOCOL_VERSION = 3;
-    public static final String SERVER_VERSION = "2.0.1";
+    public static final String SERVER_VERSION = "2.0.2";
 
     private final static StevesDBServer instance = new StevesDBServer();
 

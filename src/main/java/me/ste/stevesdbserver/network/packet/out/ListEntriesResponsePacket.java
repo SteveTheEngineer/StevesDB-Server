@@ -19,8 +19,10 @@ public class ListEntriesResponsePacket extends PacketOut {
         this.success = success;
         this.total = entries.size();
         this.entries = new TreeMap<>(Comparator.comparingInt(a -> a));
+        int i = 0;
         for(Map.Entry<Integer, Map<Integer, Object>> entry : entries.entrySet()) {
-            if(entry.getKey() >= min && entry.getKey() <= max) {
+            int index = i++;
+            if(index >= min && index <= max) {
                 Map<Integer, Object> values = new TreeMap<>(Comparator.comparingInt(a -> a));
                 for(Map.Entry<Integer, Object> entry2 : entry.getValue().entrySet()) {
                     values.put(entry2.getKey(), entry2.getValue());
