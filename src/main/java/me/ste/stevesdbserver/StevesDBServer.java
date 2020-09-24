@@ -22,8 +22,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class StevesDBServer {
-    public static final int PROTOCOL_VERSION = 2;
-    public static final String SERVER_VERSION = "2.0.0";
+    public static final int PROTOCOL_VERSION = 3;
+    public static final String SERVER_VERSION = "2.0.1";
 
     private final static StevesDBServer instance = new StevesDBServer();
 

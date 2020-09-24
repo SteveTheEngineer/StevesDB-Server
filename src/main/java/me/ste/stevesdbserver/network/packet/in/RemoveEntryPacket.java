@@ -5,7 +5,6 @@ import me.ste.stevesdbserver.database.TableColumn;
 import me.ste.stevesdbserver.network.Connection;
 import me.ste.stevesdbserver.network.packet.PacketId;
 import me.ste.stevesdbserver.network.packet.PacketIn;
-import me.ste.stevesdbserver.network.packet.out.ModifyEntryResponsePacket;
 import me.ste.stevesdbserver.network.packet.out.RemoveEntryResponsePacket;
 import me.ste.stevesdbserver.util.ComparatorOperation;
 import me.ste.stevesdbserver.util.DataReader;
@@ -13,13 +12,15 @@ import me.ste.stevesdbserver.util.EntryFilter;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @PacketId(20)
 public class RemoveEntryPacket extends PacketIn {
     private String database;
     private String table;
     private Map<String, EntryFilter> filters = new HashMap<>();
+    private int startIndex;
+    private int endIndex;
 
     @Override
     public void deserialize(DataReader reader) {
@@ -30,12 +31,15 @@ public class RemoveEntryPacket extends PacketIn {
         for(int i = 0; i < length; i++) {
             this.filters.put(reader.readString(), new EntryFilter(ComparatorOperation.values()[Math.max(0, Math.min(ComparatorOperation.values().length - 1, reader.readUnsignedByte()))], reader.readString()));
         }
+
+        this.startIndex = reader.readInt();
+        this.endIndex = reader.readInt();
     }
 
     @Override
     public void handle(Connection connection) {
         if(DatabaseManager.getInstance().hasPermission(connection.getUsername(), "remove_entry", this.database, this.table)) {
-            connection.sendPacket(new RemoveEntryResponsePacket(DatabaseManager.getInstance().doAction(this.database, this.table, true, table -> {
+            connection.sendPacket(DatabaseManager.getInstance().doAction(this.database, this.table, true, table -> {
                 if(table != null) {
                     Map<Integer, EntryFilter> cidFilters = new HashMap<>();
                     for(Map.Entry<String, EntryFilter> filter : this.filters.entrySet()) {
@@ -45,22 +49,25 @@ public class RemoveEntryPacket extends PacketIn {
                             }
                         }
                     }
-                    AtomicBoolean removed = new AtomicBoolean(false);
+                    AtomicInteger i = new AtomicInteger(0);
+                    AtomicInteger modified = new AtomicInteger(0);
                     table.getEntries().entrySet().removeIf(entry -> {
                         if(EntryFilter.entryMatchesFilters(entry.getValue(), cidFilters)) {
-                            removed.set(true);
-                            return true;
-                        } else {
-                            return false;
+                            int index = i.getAndIncrement();
+                            if(index >= this.startIndex && index <= this.endIndex) {
+                                modified.getAndIncrement();
+                                return true;
+                            }
                         }
+                        return false;
                     });
-                    return removed.get();
+                    return new RemoveEntryResponsePacket(true, modified.get());
                 } else {
-                    return false;
+                    return new RemoveEntryResponsePacket(false, 0);
                 }
-            })));
+            }));
         } else {
-            connection.sendPacket(new RemoveEntryResponsePacket(false));
+            connection.sendPacket(new RemoveEntryResponsePacket(false, 0));
         }
     }
 }
